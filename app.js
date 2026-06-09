@@ -20,6 +20,8 @@ let invoices = [];
 let role = "manager";
 let db = null;
 let dbReady = false;
+let editingHarvestId = null;
+let editingInvoiceId = null;
 
 document.getElementById("loginRole").addEventListener("change", event => {
   const selected = event.target.value;
@@ -62,11 +64,19 @@ document.getElementById("harvestForm").addEventListener("submit", async event =>
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.target));
   const record = { ...data, weight: Number(data.weight) };
+  if (editingHarvestId) {
+    const updated = await updateHarvest(editingHarvestId, record);
+    if (!updated) return;
+    harvests = harvests.map(row => row.id === editingHarvestId ? { ...record, id: editingHarvestId } : row);
+    resetHarvestForm();
+    renderAll();
+    setView("harvest");
+    return;
+  }
   const saved = await saveHarvest(record);
   if (!saved) return;
-  harvests.unshift(record);
-  event.target.reset();
-  setNextTransactionNo();
+  harvests.unshift(saved);
+  resetHarvestForm();
   renderAll();
   setView("harvest");
 });
@@ -80,13 +90,36 @@ document.getElementById("invoiceForm").addEventListener("submit", async event =>
     rejected: Number(data.rejected),
     payment: Number(data.payment)
   };
+  if (editingInvoiceId) {
+    const updated = await updateInvoice(editingInvoiceId, record);
+    if (!updated) return;
+    invoices = invoices.map(row => row.id === editingInvoiceId ? { ...record, id: editingInvoiceId } : row);
+    resetInvoiceForm();
+    renderAll();
+    setView("invoices");
+    return;
+  }
   const saved = await saveInvoice(record);
   if (!saved) return;
-  invoices.unshift(record);
-  event.target.reset();
-  setNextInvoiceNo();
+  invoices.unshift(saved);
+  resetInvoiceForm();
   renderAll();
   setView("invoices");
+});
+
+document.getElementById("cancelHarvestEdit").addEventListener("click", resetHarvestForm);
+document.getElementById("cancelInvoiceEdit").addEventListener("click", resetInvoiceForm);
+
+document.getElementById("harvestTable").addEventListener("click", event => {
+  const button = event.target.closest("[data-edit-harvest]");
+  if (!button) return;
+  startHarvestEdit(button.dataset.editHarvest);
+});
+
+document.getElementById("invoiceTable").addEventListener("click", event => {
+  const button = event.target.closest("[data-edit-invoice]");
+  if (!button) return;
+  startInvoiceEdit(button.dataset.editInvoice);
 });
 
 document.getElementById("searchInput").addEventListener("input", renderSearch);
@@ -133,7 +166,7 @@ function renderAll() {
 
 function setNextTransactionNo() {
   const input = document.getElementById("transactionNo");
-  if (!input) return;
+  if (!input || editingHarvestId) return;
   input.value = nextTransactionNo();
 }
 
@@ -149,7 +182,7 @@ function nextTransactionNo() {
 
 function setNextInvoiceNo() {
   const input = document.getElementById("invoiceNo");
-  if (!input) return;
+  if (!input || editingInvoiceId) return;
   input.value = nextInvoiceNo();
 }
 
@@ -161,6 +194,54 @@ function nextInvoiceNo() {
     .map(match => Number(match[1]));
   const next = numbers.length ? Math.max(...numbers) + 1 : 1;
   return `INV-${year}-${String(next).padStart(3, "0")}`;
+}
+
+function startHarvestEdit(id) {
+  const record = harvests.find(row => String(row.id) === String(id));
+  if (!record) return;
+  editingHarvestId = record.id;
+  const form = document.getElementById("harvestForm");
+  form.transactionNo.value = record.transactionNo;
+  form.harvestDate.value = record.harvestDate;
+  form.batch.value = record.batch;
+  form.weight.value = record.weight;
+  form.deliveryDate.value = record.deliveryDate;
+  form.remarks.value = record.remarks;
+  document.getElementById("harvestSubmitBtn").textContent = "Update harvest record";
+  document.getElementById("cancelHarvestEdit").hidden = false;
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetHarvestForm() {
+  editingHarvestId = null;
+  document.getElementById("harvestForm").reset();
+  document.getElementById("harvestSubmitBtn").textContent = "Save harvest record";
+  document.getElementById("cancelHarvestEdit").hidden = true;
+  setNextTransactionNo();
+}
+
+function startInvoiceEdit(id) {
+  const record = invoices.find(row => String(row.id) === String(id));
+  if (!record) return;
+  editingInvoiceId = record.id;
+  const form = document.getElementById("invoiceForm");
+  form.invoiceNo.value = record.invoiceNo;
+  form.deliveryDate.value = record.deliveryDate;
+  form.weight.value = record.weight;
+  form.rejected.value = record.rejected;
+  form.grade.value = record.grade;
+  form.payment.value = record.payment;
+  document.getElementById("invoiceSubmitBtn").textContent = "Update invoice";
+  document.getElementById("cancelInvoiceEdit").hidden = false;
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetInvoiceForm() {
+  editingInvoiceId = null;
+  document.getElementById("invoiceForm").reset();
+  document.getElementById("invoiceSubmitBtn").textContent = "Save invoice";
+  document.getElementById("cancelInvoiceEdit").hidden = true;
+  setNextInvoiceNo();
 }
 
 async function initSupabase() {
@@ -203,7 +284,7 @@ async function saveHarvest(record) {
     showConnectionError("Connect Supabase before saving harvest records.");
     return false;
   }
-  const { error } = await db.from("harvest_records").insert(toHarvestRow(record));
+  const { data, error } = await db.from("harvest_records").insert(toHarvestRow(record)).select().single();
   if (error) {
     setDataStatus("Save failed - check Supabase");
     showConnectionError("Harvest record was not saved to Supabase. Check duplicate transaction numbers and table policies.");
@@ -211,7 +292,8 @@ async function saveHarvest(record) {
     return false;
   }
   setDataStatus("Saved to Supabase");
-  return true;
+  hideConnectionError();
+  return fromHarvestRow(data);
 }
 
 async function saveInvoice(record) {
@@ -219,7 +301,7 @@ async function saveInvoice(record) {
     showConnectionError("Connect Supabase before saving invoice records.");
     return false;
   }
-  const { error } = await db.from("invoice_records").insert(toInvoiceRow(record));
+  const { data, error } = await db.from("invoice_records").insert(toInvoiceRow(record)).select().single();
   if (error) {
     setDataStatus("Save failed - check Supabase");
     showConnectionError("Invoice record was not saved to Supabase. Check duplicate invoice numbers and table policies.");
@@ -227,6 +309,41 @@ async function saveInvoice(record) {
     return false;
   }
   setDataStatus("Saved to Supabase");
+  hideConnectionError();
+  return fromInvoiceRow(data);
+}
+
+async function updateHarvest(id, record) {
+  if (!dbReady) {
+    showConnectionError("Connect Supabase before editing harvest records.");
+    return false;
+  }
+  const { error } = await db.from("harvest_records").update(toHarvestRow(record)).eq("id", id);
+  if (error) {
+    setDataStatus("Update failed - check Supabase");
+    showConnectionError("Harvest record was not updated. Run the latest supabase-schema.sql to allow update access.");
+    console.warn("Harvest update failed:", error.message || error);
+    return false;
+  }
+  setDataStatus("Updated in Supabase");
+  hideConnectionError();
+  return true;
+}
+
+async function updateInvoice(id, record) {
+  if (!dbReady) {
+    showConnectionError("Connect Supabase before editing invoice records.");
+    return false;
+  }
+  const { error } = await db.from("invoice_records").update(toInvoiceRow(record)).eq("id", id);
+  if (error) {
+    setDataStatus("Update failed - check Supabase");
+    showConnectionError("Invoice record was not updated. Run the latest supabase-schema.sql to allow update access.");
+    console.warn("Invoice update failed:", error.message || error);
+    return false;
+  }
+  setDataStatus("Updated in Supabase");
+  hideConnectionError();
   return true;
 }
 
@@ -257,6 +374,7 @@ function toHarvestRow(row) {
 
 function fromHarvestRow(row) {
   return {
+    id: row.id,
     transactionNo: row.transaction_no,
     harvestDate: row.harvest_date,
     batch: row.batch_information,
@@ -279,6 +397,7 @@ function toInvoiceRow(row) {
 
 function fromInvoiceRow(row) {
   return {
+    id: row.id,
     invoiceNo: row.invoice_no,
     deliveryDate: row.delivery_date,
     weight: Number(row.harvest_weight),
@@ -315,6 +434,7 @@ function renderHarvests() {
       <td>${row.harvestDate}</td>
       <td>${row.deliveryDate}</td>
       <td>${kg(row.weight)}</td>
+      <td><button class="table-action" type="button" data-edit-harvest="${row.id}">Edit</button></td>
     </tr>
   `).join("");
 }
@@ -329,6 +449,7 @@ function renderInvoices() {
       <td>${kg(row.rejected)}</td>
       <td>Grade ${row.grade}</td>
       <td>${money(row.payment)}</td>
+      <td><button class="table-action" type="button" data-edit-invoice="${row.id}">Edit</button></td>
     </tr>
   `).join("");
 }

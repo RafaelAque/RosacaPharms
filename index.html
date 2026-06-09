@@ -117,7 +117,10 @@
             <label>Harvest Weight (kg)<input name="weight" type="number" min="1" required></label>
             <label>Delivery Date<input name="deliveryDate" type="date" required></label>
             <label class="wide">Remarks<input name="remarks" placeholder="Ready for plant delivery"></label>
-            <button class="primary wide" type="submit">Save harvest record</button>
+            <div class="form-actions wide">
+              <button id="harvestSubmitBtn" class="primary" type="submit">Save harvest record</button>
+              <button id="cancelHarvestEdit" class="ghost alt" type="button" hidden>Cancel edit</button>
+            </div>
           </form>
           <section class="panel">
             <div class="panel-head">
@@ -126,7 +129,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Txn</th><th>Batch</th><th>Harvest</th><th>Delivery</th><th>Weight</th></tr></thead>
+                <thead><tr><th>Txn</th><th>Batch</th><th>Harvest</th><th>Delivery</th><th>Weight</th><th>Action</th></tr></thead>
                 <tbody id="harvestTable"></tbody>
               </table>
             </div>
@@ -144,7 +147,10 @@
             <label>Rejected Quantity (kg)<input name="rejected" type="number" min="0" required></label>
             <label>Quality Grade<select name="grade"><option>A</option><option>B</option><option>C</option></select></label>
             <label>Payment Amount (PHP)<input name="payment" type="number" min="0" required></label>
-            <button class="primary wide" type="submit">Save invoice</button>
+            <div class="form-actions wide">
+              <button id="invoiceSubmitBtn" class="primary" type="submit">Save invoice</button>
+              <button id="cancelInvoiceEdit" class="ghost alt" type="button" hidden>Cancel edit</button>
+            </div>
           </form>
           <section class="panel">
             <div class="panel-head">
@@ -153,7 +159,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Invoice</th><th>Date</th><th>Weight</th><th>Rejected</th><th>Grade</th><th>Payment</th></tr></thead>
+                <thead><tr><th>Invoice</th><th>Date</th><th>Weight</th><th>Rejected</th><th>Grade</th><th>Payment</th><th>Action</th></tr></thead>
                 <tbody id="invoiceTable"></tbody>
               </table>
             </div>

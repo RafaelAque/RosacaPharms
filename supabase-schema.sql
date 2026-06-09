@@ -25,8 +25,10 @@ alter table public.invoice_records enable row level security;
 
 drop policy if exists "Prototype read harvest records" on public.harvest_records;
 drop policy if exists "Prototype insert harvest records" on public.harvest_records;
+drop policy if exists "Prototype update harvest records" on public.harvest_records;
 drop policy if exists "Prototype read invoice records" on public.invoice_records;
 drop policy if exists "Prototype insert invoice records" on public.invoice_records;
+drop policy if exists "Prototype update invoice records" on public.invoice_records;
 
 create policy "Prototype read harvest records"
 on public.harvest_records for select
@@ -38,6 +40,12 @@ on public.harvest_records for insert
 to anon
 with check (true);
 
+create policy "Prototype update harvest records"
+on public.harvest_records for update
+to anon
+using (true)
+with check (true);
+
 create policy "Prototype read invoice records"
 on public.invoice_records for select
 to anon
@@ -46,6 +54,12 @@ using (true);
 create policy "Prototype insert invoice records"
 on public.invoice_records for insert
 to anon
+with check (true);
+
+create policy "Prototype update invoice records"
+on public.invoice_records for update
+to anon
+using (true)
 with check (true);
 
 insert into public.harvest_records

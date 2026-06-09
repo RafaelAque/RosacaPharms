@@ -57,7 +57,7 @@ This creates the required database tables:
 - `harvest_records`
 - `invoice_records`
 
-It also enables Row Level Security and creates prototype read and insert policies.
+It also enables Row Level Security and creates prototype read, insert, and update policies.
 
 ## Supabase Configuration
 
@@ -127,6 +127,13 @@ Example:
 
 When saved, the record is inserted into the Supabase `harvest_records` table.
 
+To edit a harvest record:
+
+1. Click **Edit** beside the harvest record.
+2. Update the harvest date, batch information, weight, delivery date, or remarks.
+3. Click **Update harvest record**.
+4. The changes are saved to Supabase.
+
 ## Invoice Management
 
 Use this module to record invoice details received from the processing plant.
@@ -154,6 +161,13 @@ Example:
 | Payment Amount | `78000` |
 
 When saved, the record is inserted into the Supabase `invoice_records` table.
+
+To edit an invoice record:
+
+1. Click **Edit** beside the invoice record.
+2. Update the delivery date, weight, rejected quantity, quality grade, or payment amount.
+3. Click **Update invoice**.
+4. The changes are saved to Supabase.
 
 ## Harvest Quality Monitoring
 
@@ -236,7 +250,7 @@ After deployment, Vercel provides a public website link.
 | --- | --- |
 | `index.html` | Main system interface |
 | `styles.css` | Layout, styling, and animations |
-| `app.js` | System logic, auto-numbering, Supabase connection, reports, and role access |
+| `app.js` | System logic, auto-numbering, editing, Supabase connection, reports, and role access |
 | `supabase-config.js` | Supabase URL and publishable key |
 | `supabase-schema.sql` | Database table setup and policies |
 | `SUPABASE_SETUP.md` | Short Supabase setup guide |

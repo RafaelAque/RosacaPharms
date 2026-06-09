@@ -302,6 +302,27 @@ input[readonly] {
 
 .primary:hover { background: #24583d; }
 
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ghost.alt {
+  color: var(--green);
+  background: #f8f6ef;
+  border-color: var(--line);
+}
+
+.table-action {
+  min-height: 32px;
+  padding: 6px 10px;
+  color: var(--green);
+  background: #eef3e8;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
 .error-message {
   min-height: 18px;
   margin: 0;
@@ -432,5 +453,6 @@ th {
   .workspace { padding: 16px; }
   .topbar { align-items: flex-start; flex-direction: column; }
   .form-grid, .nav { grid-template-columns: 1fr; }
+  .form-actions { grid-template-columns: 1fr; }
   .metric strong { font-size: 23px; }
 }
