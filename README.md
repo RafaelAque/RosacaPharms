@@ -134,6 +134,11 @@ To edit a harvest record:
 3. Click **Update harvest record**.
 4. The changes are saved to Supabase.
 
+To download harvest records:
+
+1. Click **Download CSV** in the Harvest Records panel.
+2. The system downloads the current harvest records as `rosaca-harvest-records.csv`.
+
 ## Invoice Management
 
 Use this module to record invoice details received from the processing plant.
@@ -168,6 +173,11 @@ To edit an invoice record:
 2. Update the delivery date, weight, rejected quantity, quality grade, or payment amount.
 3. Click **Update invoice**.
 4. The changes are saved to Supabase.
+
+To download invoice records:
+
+1. Click **Download CSV** in the Invoice History panel.
+2. The system downloads the current invoice records as `rosaca-invoice-records.csv`.
 
 ## Harvest Quality Monitoring
 
@@ -250,7 +260,7 @@ After deployment, Vercel provides a public website link.
 | --- | --- |
 | `index.html` | Main system interface |
 | `styles.css` | Layout, styling, and animations |
-| `app.js` | System logic, auto-numbering, editing, Supabase connection, reports, and role access |
+| `app.js` | System logic, auto-numbering, editing, CSV downloads, Supabase connection, reports, and role access |
 | `supabase-config.js` | Supabase URL and publishable key |
 | `supabase-schema.sql` | Database table setup and policies |
 | `SUPABASE_SETUP.md` | Short Supabase setup guide |

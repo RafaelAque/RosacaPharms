@@ -109,6 +109,8 @@ document.getElementById("invoiceForm").addEventListener("submit", async event =>
 
 document.getElementById("cancelHarvestEdit").addEventListener("click", resetHarvestForm);
 document.getElementById("cancelInvoiceEdit").addEventListener("click", resetInvoiceForm);
+document.getElementById("downloadHarvestCsv").addEventListener("click", downloadHarvestCsv);
+document.getElementById("downloadInvoiceCsv").addEventListener("click", downloadInvoiceCsv);
 
 document.getElementById("harvestTable").addEventListener("click", event => {
   const button = event.target.closest("[data-edit-harvest]");
@@ -242,6 +244,57 @@ function resetInvoiceForm() {
   document.getElementById("invoiceSubmitBtn").textContent = "Save invoice";
   document.getElementById("cancelInvoiceEdit").hidden = true;
   setNextInvoiceNo();
+}
+
+function downloadHarvestCsv() {
+  const rows = harvests.map(row => ({
+    "Transaction No.": row.transactionNo,
+    "Harvest Date": row.harvestDate,
+    "Batch Information": row.batch,
+    "Harvest Weight (kg)": row.weight,
+    "Delivery Date": row.deliveryDate,
+    Remarks: row.remarks
+  }));
+  downloadCsv("rosaca-harvest-records.csv", rows);
+}
+
+function downloadInvoiceCsv() {
+  const rows = invoices.map(row => ({
+    "Invoice No.": row.invoiceNo,
+    "Delivery Date": row.deliveryDate,
+    "Harvest Weight (kg)": row.weight,
+    "Rejected Quantity (kg)": row.rejected,
+    "Quality Grade": row.grade,
+    "Payment Amount (PHP)": row.payment
+  }));
+  downloadCsv("rosaca-invoice-records.csv", rows);
+}
+
+function downloadCsv(filename, rows) {
+  if (!rows.length) {
+    setDataStatus("No records to download");
+    return;
+  }
+  const headers = Object.keys(rows[0]);
+  const csv = [
+    headers.join(","),
+    ...rows.map(row => headers.map(header => csvValue(row[header])).join(","))
+  ].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setDataStatus("CSV downloaded");
+}
+
+function csvValue(value) {
+  const text = String(value ?? "");
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
 async function initSupabase() {

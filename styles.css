@@ -254,6 +254,14 @@ button, input, select { font: inherit; }
   margin-bottom: 16px;
 }
 
+.panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .two-col, .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -452,6 +460,8 @@ th {
   .login-panel h1 { font-size: 36px; }
   .workspace { padding: 16px; }
   .topbar { align-items: flex-start; flex-direction: column; }
+  .panel-head { align-items: flex-start; flex-direction: column; }
+  .panel-actions { justify-content: flex-start; }
   .form-grid, .nav { grid-template-columns: 1fr; }
   .form-actions { grid-template-columns: 1fr; }
   .metric strong { font-size: 23px; }
